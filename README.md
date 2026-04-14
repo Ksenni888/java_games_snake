@@ -17,4 +17,4 @@
 # Стек: 
 ![Static Badge](https://img.shields.io/badge/17%20-%20green?label=java%20version)
 ![Static Badge](https://img.shields.io/badge/4.0.0%20-%20green?label=maven)
-![Static Badge](https://img.shields.io/badge/4.0.0%20-%20green?label=FXGL%17.3)
+![Static Badge](https://img.shields.io/badge/17.3%20-%20green?label=FXGL)
