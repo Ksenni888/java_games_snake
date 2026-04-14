@@ -1,4 +1,4 @@
-package org.example;
+package org.example.model;
 
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.texture.AnimatedTexture;
@@ -7,19 +7,19 @@ import javafx.util.Duration;
 
 import static com.almasb.fxgl.dsl.FXGL.image;
 
-public class CactusComponent extends Component{
+public class AppleComponent extends Component{
     private AnimatedTexture texture;
     private AnimationChannel animIdle;
 
-    public CactusComponent() {
+    public AppleComponent() {
         animIdle = new AnimationChannel(
-                image("cactus.png"),
-                2,
+                image("apple.png"),
+                4,
                 32,
                 32,
                 Duration.seconds(1),
                 0,
-                1);
+                3);
         texture = new AnimatedTexture(animIdle);
         texture.loop();
     }

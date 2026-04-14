@@ -7,14 +7,10 @@ import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.time.TimerAction;
 import javafx.scene.input.KeyCode;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import org.example.controllers.AppleController;
+import org.example.controllers.CactusController;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.almasb.fxgl.dsl.FXGL.entityBuilder;
 import static com.almasb.fxgl.dsl.FXGL.getAssetLoader;
 import static com.almasb.fxgl.dsl.FXGL.getDialogService;
 import static com.almasb.fxgl.dsl.FXGL.getGameController;
@@ -23,20 +19,18 @@ import static com.almasb.fxgl.dsl.FXGL.getGameTimer;
 import static com.almasb.fxgl.dsl.FXGL.getGameWorld;
 import static com.almasb.fxgl.dsl.FXGL.onKey;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.loopBGM;
+import static org.example.Constants.CELL_SIZE;
+import static org.example.Constants.GRID_HEIGHT;
+import static org.example.Constants.GRID_WIDTH;
 
 public class MyGame extends GameApplication {
+    Snake snake = new Snake();
+    AppleController appleController = new AppleController(snake);
+    CactusController cactusController = new CactusController(snake);
 
-    private static int CELL_SIZE = 40;
-    private static final int GRID_WIDTH = 15;
-    private static final int GRID_HEIGHT = 15;
-    private List<Entity> snake = new ArrayList<>();
-    private int directionX = 1;
-    private int directionY = 0;
     private TimerAction timer;
     private TimerAction timerApple;
     private TimerAction timerCactus;
-    private Entity apple;
-    private Entity cactus;
 
     @Override
     protected void initSettings(GameSettings gameSettings) {
@@ -55,134 +49,44 @@ public class MyGame extends GameApplication {
         GameView backgroundView = new GameView(texture, 0);
         getGameScene().addGameView(backgroundView);
         loopBGM("snake.mp3");
-
+        snake.addSnake();
         if (timer != null) {
             timer.expire();
             timer = null;
         }
-        Entity head = createSegment(5, 5);
-        Entity body = createSegment(4, 5);
-        Entity tail = createSegment(3, 5);
-        snake.add(head);
-        snake.add(body);
-        snake.add(tail);
-
         timer = getGameTimer().runAtInterval(() -> moveSnake(), Duration.seconds(0.3));
-        timerApple = getGameTimer().runAtInterval(() -> spawnApple(), Duration.seconds(5));
-        timerCactus = getGameTimer().runAtInterval(() -> spawnCactus(), Duration.seconds(5));
-
-    }
-
-    private void spawnCactus() {
-        if (cactus != null) {
-            cactus.removeFromWorld();
-        }
-        boolean freeCellFound;
-        int cactusX;
-        int cactusY;
-
-        do {
-            freeCellFound = true;
-            cactusX = (int) (Math.random() * GRID_WIDTH);
-            cactusY = (int) (Math.random() * GRID_HEIGHT);
-
-            for (Entity s : snake) {
-                if ((int) (s.getX() / CELL_SIZE) == cactusX &&
-                        (int) (s.getY() / CELL_SIZE) == cactusY
-                ) {
-                    freeCellFound = false;
-                    break;
-                }
-
-            }
-        } while (!freeCellFound);
-
-        cactus = entityBuilder()
-                .at(cactusX*CELL_SIZE, cactusY*CELL_SIZE)
-                .with(new CactusComponent())
-                .buildAndAttach();
-    }
-
-    private void spawnApple() {
-        if (apple != null) {
-            apple.removeFromWorld();
-        }
-        boolean freeCellFound;
-        int appleX;
-        int appleY;
-
-        do {
-            freeCellFound = true;
-            appleX = (int) (Math.random() * GRID_WIDTH);
-            appleY = (int) (Math.random() * GRID_HEIGHT);
-
-            for (Entity segment : snake) {
-                if ((int) (segment.getX() / CELL_SIZE) == appleX &&
-                        (int) (segment.getY() / CELL_SIZE) == appleY) {
-                    freeCellFound = false;
-                    break;
-                }
-            }
-        } while (!freeCellFound);
-
-        apple = entityBuilder()
-                .at(appleX * CELL_SIZE, appleY * CELL_SIZE)
-                .with(new AppleComponent())
-                .buildAndAttach();
-        System.out.println("Яблоко создано на позиции: "+appleX+", "+appleY);
+        timerApple = getGameTimer().runAtInterval(() -> appleController.spawnApple(), Duration.seconds(5));
+        timerCactus = getGameTimer().runAtInterval(() -> cactusController.spawnCactus(), Duration.seconds(5));
     }
 
     @Override
     protected void initInput() {
-        onKey(KeyCode.RIGHT, () -> {
-            if (directionX != -1) {
-                directionX = 1;
-                directionY = 0;
-            }
+        onKey(KeyCode.RIGHT, () -> {if (snake != null) snake.setDirection(1,0);
         });
-        onKey(KeyCode.LEFT, () -> {
-            if (directionX != 1) {
-                directionX = -1;
-                directionY = 0;
-            }
+        onKey(KeyCode.LEFT, () -> {if (snake != null) snake.setDirection(-1,0);
         });
-        onKey(KeyCode.UP, () -> {
-            if (directionY != 1) {
-                directionX = 0;
-                directionY = -1;
-            }
-        });
-        onKey(KeyCode.DOWN, () -> {
-            if (directionY != -1) {
-                directionX = 0;
-                directionY = 1;
-            }
-        });
-    }
+        onKey(KeyCode.UP, () -> {if (snake != null) snake.setDirection(0,-1);
 
-    private Entity createSegment(int gridX, int gridY) {
-        Entity segment = entityBuilder()
-                .at(gridX * CELL_SIZE, gridY * CELL_SIZE)
-                .view(new Rectangle(CELL_SIZE - 2, CELL_SIZE -2, Color.YELLOW))
-                .buildAndAttach();
-        return  segment;
+        });
+        onKey(KeyCode.DOWN, () -> {if (snake != null) snake.setDirection(0,1);
+        });
     }
 
     private void moveSnake() {
 
-        if (snake.isEmpty()) {
+        if (snake.getSnake().isEmpty()) {
             System.out.println("snake пуст!");
             return;
         }
 
-        Entity head = snake.get(0);
+        Entity head = snake.getSnake().get(0);
 
         int headX = (int) (head.getX() / CELL_SIZE);
         int headY = (int) (head.getY() / CELL_SIZE);
-        int newX = headX + directionX;
-        int newY = headY + directionY;
+        int newX = headX + snake.getDirectionX();
+        int newY = headY + snake.getDirectionY();
 
-        for (Entity segment: snake) {
+        for (Entity segment: snake.getSnake()) {
             int segmentX = (int) (segment.getX() / CELL_SIZE);
             int segmentY = (int) (segment.getY() / CELL_SIZE);
             if (segmentX == newX && segmentY == newY) {
@@ -197,44 +101,23 @@ public class MyGame extends GameApplication {
             return;
         }
 
-        boolean ateCactus = (cactus != null &&
-                (int)(cactus.getX()/CELL_SIZE) == newX &&
-                (int)(cactus.getY()/CELL_SIZE) == newY);
+        Entity newHead = snake.createSegment(newX, newY);
+        snake.getSnake().add(0, newHead);
 
-        boolean ateApple = (apple != null &&
-                (int)(apple.getX() / CELL_SIZE) == newX &&
-                (int)(apple.getY() / CELL_SIZE) == newY);
+        if (cactusController.ateCactus(newX, newY)) {
+            snake.removeTail(); }
 
-        Entity newHead = createSegment(newX, newY);
-        snake.add(0, newHead);
-
-        if (ateCactus) {
-            if (snake.size() > 2) {
-                Entity tail = snake.remove(snake.size() - 1);
-                tail.removeFromWorld();}
-            cactus.removeFromWorld();
-            cactus = null;
-            spawnCactus();}
-
-        if (!ateApple) {
-            Entity tail = snake.remove(snake.size() - 1);
-            tail.removeFromWorld();
-        } else {
-            apple.removeFromWorld();
-            apple = null;
-            spawnApple();
-            System.out.println("Яблоко съедено! Размер змейки " + snake.size());
-        }
-        System.out.println("Движение выполнено, размер змейки: " + snake.size());
+        if (!appleController.ateApple(newX, newY)) {
+            snake.removeTail(); }
     }
 
     private void gameOver() {
         System.out.println("GAME OVER!");
         getDialogService().showMessageBox("GAME OVER", () -> {
             getGameWorld().getEntities().clear();
-            snake.clear();
-            directionX = 1;
-            directionY = 0;
+            snake.getSnake().clear();
+            snake.setDirectionX(1);
+            snake.setDirectionY(0);
             getGameController().startNewGame();
         });
     }
