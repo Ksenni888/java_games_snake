@@ -21,6 +21,8 @@
 
 Если змейка врезается в стену или в саму себя, то GAME OVER.
 
+При нажатии на клавишу Escape открывается меню с настройками.
+
 ## Стек: 
 ![Static Badge](https://img.shields.io/badge/17%20-%20green?label=java%20version)
 ![Static Badge](https://img.shields.io/badge/4.0.0%20-%20green?label=maven)
