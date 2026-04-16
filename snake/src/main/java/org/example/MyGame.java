@@ -3,6 +3,7 @@ package org.example;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.app.scene.GameView;
+import com.almasb.fxgl.audio.Music;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.time.TimerAction;
@@ -10,23 +11,24 @@ import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
 import org.example.controllers.AppleController;
 import org.example.controllers.CactusController;
+import org.example.ui.MySceneFactory;
 
 import static com.almasb.fxgl.dsl.FXGL.getAssetLoader;
+import static com.almasb.fxgl.dsl.FXGL.getAudioPlayer;
 import static com.almasb.fxgl.dsl.FXGL.getDialogService;
 import static com.almasb.fxgl.dsl.FXGL.getGameController;
 import static com.almasb.fxgl.dsl.FXGL.getGameScene;
 import static com.almasb.fxgl.dsl.FXGL.getGameTimer;
 import static com.almasb.fxgl.dsl.FXGL.getGameWorld;
 import static com.almasb.fxgl.dsl.FXGL.onKey;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.loopBGM;
 import static org.example.Constants.CELL_SIZE;
 import static org.example.Constants.GRID_HEIGHT;
 import static org.example.Constants.GRID_WIDTH;
 
 public class MyGame extends GameApplication {
-    Snake snake = new Snake();
-    AppleController appleController = new AppleController(snake);
-    CactusController cactusController = new CactusController(snake);
+    private final Snake snake = new Snake();
+    private final AppleController appleController = new AppleController(snake);
+    private final CactusController cactusController = new CactusController(snake);
 
     private TimerAction timer;
     private TimerAction timerApple;
@@ -39,6 +41,9 @@ public class MyGame extends GameApplication {
         gameSettings.setTitle("Snake");
         gameSettings.setVersion("1.0");
         gameSettings.setIntroEnabled(false);
+        gameSettings.setGameMenuEnabled(true);
+        gameSettings.setSceneFactory(new MySceneFactory());
+
     }
 
     @Override
@@ -48,7 +53,9 @@ public class MyGame extends GameApplication {
         texture.setFitHeight(600);
         GameView backgroundView = new GameView(texture, 0);
         getGameScene().addGameView(backgroundView);
-        loopBGM("snake.mp3");
+        Music music = getAssetLoader().loadMusic("snake.mp3");
+        getAudioPlayer().playMusic(music);
+        music.getAudio().setVolume(0.05);
         snake.addSnake();
         if (timer != null) {
             timer.expire();

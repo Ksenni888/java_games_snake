@@ -43,7 +43,6 @@ public class AppleController {
                 .at(appleX * CELL_SIZE, appleY * CELL_SIZE)
                 .with(new AppleComponent())
                 .buildAndAttach();
-        System.out.println("Яблоко создано на позиции: " + appleX + ", " + appleY);
     }
 
     public boolean ateApple(int newX, int newY) {
