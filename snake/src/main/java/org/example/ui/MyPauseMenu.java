@@ -2,7 +2,6 @@ package org.example.ui;
 
 import com.almasb.fxgl.app.scene.FXGLMenu;
 import com.almasb.fxgl.app.scene.MenuType;
-import com.almasb.fxgl.audio.Music;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
@@ -13,25 +12,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-
-import static com.almasb.fxgl.dsl.FXGLForKtKt.getAssetLoader;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.getAudioPlayer;
+import org.example.controllers.SoundController;
 
 
 public class MyPauseMenu extends FXGLMenu {
-    private Music backgroundMusic;
+    private SoundController soundController = SoundController.getInstance();
 
     public MyPauseMenu(MenuType type) {
         super(type);
         getContentRoot().getChildren().clear();
-
-        if (backgroundMusic == null) {
-            backgroundMusic = getAssetLoader().loadMusic("snake.mp3");
-            getAudioPlayer().loopMusic(backgroundMusic);
-            backgroundMusic.getAudio().setVolume(1);
-        }
-
-
         StackPane rootPane = new StackPane();
 
         Rectangle bg = new Rectangle(300,300);
@@ -54,23 +43,27 @@ public class MyPauseMenu extends FXGLMenu {
 
         HBox volumeBox = new HBox(10);
         volumeBox.setAlignment(Pos.CENTER);
-
         Text volumeLabel = new Text("Громкость");
         volumeLabel.setFill(Color.WHITE);
         volumeLabel.setFont(Font.font("Arial", 14));
-
-        Slider volumeSlider = new Slider(0,5,0.05);
-        volumeSlider.setPrefWidth(150);
-        volumeSlider.setShowTickLabels(true);
-        volumeSlider.setShowTickMarks(true);
-        volumeSlider.setMajorTickUnit(1);
-
-        volumeSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            double volume = newVal.doubleValue();
-            backgroundMusic.getAudio().setVolume(volume);
+        Slider volumeMusicSlider = new Slider(0, 1, soundController.getVolume());
+        volumeMusicSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            soundController.setVolume(newVal.doubleValue());
         });
-        volumeBox.getChildren().addAll(volumeLabel, volumeSlider);
-        menuBox.getChildren().addAll(title, resumeBtn, volumeBox, exit);
+        volumeBox.getChildren().addAll(volumeLabel, volumeMusicSlider);
+
+        HBox volumeEatBox = new HBox(10);
+        volumeEatBox.setAlignment(Pos.CENTER);
+        Text volumeEatLabel = new Text("Громкость поедания");
+        volumeEatLabel.setFill(Color.WHITE);
+        volumeEatLabel.setFont(Font.font("Arial", 14));
+        Slider volumeEatSlider = new Slider(0,1,soundController.getVolumeEat());
+        volumeEatSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            soundController.setVolumeEat(newVal.doubleValue());
+        });
+        volumeEatBox.getChildren().addAll(volumeEatLabel, volumeEatSlider);
+
+        menuBox.getChildren().addAll(title, resumeBtn, volumeBox, volumeEatBox, exit);
         rootPane.getChildren().addAll(bg, menuBox);
         getContentRoot().getChildren().add(rootPane);
     }

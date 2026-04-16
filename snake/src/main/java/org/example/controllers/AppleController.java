@@ -10,7 +10,7 @@ import static org.example.Constants.GRID_HEIGHT;
 import static org.example.Constants.GRID_WIDTH;
 
 public class AppleController {
-    private Snake snake;
+    private final Snake snake;
     private Entity apple;
 
     public AppleController(Snake snake) {

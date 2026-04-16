@@ -1,7 +1,9 @@
 package org.example;
+
 import com.almasb.fxgl.entity.Entity;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +14,6 @@ public class Snake {
     private final List<Entity> snake = new ArrayList<>();
     private int directionX = 1;
     private int directionY = 0;
-
     public List<Entity> getSnake() {
         return snake;
     }
@@ -31,8 +32,11 @@ public class Snake {
     }
 
     public void setDirection(int x, int y) {
-        if ((directionX == -1 && x == 1) || (directionX == 1 && x == -1)) return;
-        if ((directionY == -1 && y == 1) || (directionY == 1 && y == -1)) return;
+        if ((directionX == -1 && x == 1) ||
+                (directionX == 1 && x == -1) ||
+                (directionY == -1 && y == 1) ||
+                (directionY == 1 && y == -1))
+            return;
         directionX = x;
         directionY = y;
     }
@@ -52,9 +56,9 @@ public class Snake {
                 .view(new Rectangle(CELL_SIZE - 2, CELL_SIZE -2, Color.YELLOW))
                 .buildAndAttach();
     }
+
     public void removeTail() {
         if (snake.size() > 1) {
             Entity tail = snake.remove(snake.size() - 1);
             tail.removeFromWorld();}}
-
 }

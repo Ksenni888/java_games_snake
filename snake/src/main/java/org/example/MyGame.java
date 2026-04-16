@@ -3,7 +3,6 @@ package org.example;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.app.scene.GameView;
-import com.almasb.fxgl.audio.Music;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.time.TimerAction;
@@ -11,10 +10,10 @@ import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
 import org.example.controllers.AppleController;
 import org.example.controllers.CactusController;
+import org.example.controllers.SoundController;
 import org.example.ui.MySceneFactory;
 
 import static com.almasb.fxgl.dsl.FXGL.getAssetLoader;
-import static com.almasb.fxgl.dsl.FXGL.getAudioPlayer;
 import static com.almasb.fxgl.dsl.FXGL.getDialogService;
 import static com.almasb.fxgl.dsl.FXGL.getGameController;
 import static com.almasb.fxgl.dsl.FXGL.getGameScene;
@@ -34,6 +33,8 @@ public class MyGame extends GameApplication {
     private TimerAction timerApple;
     private TimerAction timerCactus;
 
+    SoundController soundController = SoundController.getInstance();
+
     @Override
     protected void initSettings(GameSettings gameSettings) {
         gameSettings.setWidth(CELL_SIZE * GRID_WIDTH);
@@ -43,7 +44,6 @@ public class MyGame extends GameApplication {
         gameSettings.setIntroEnabled(false);
         gameSettings.setGameMenuEnabled(true);
         gameSettings.setSceneFactory(new MySceneFactory());
-
     }
 
     @Override
@@ -53,9 +53,9 @@ public class MyGame extends GameApplication {
         texture.setFitHeight(600);
         GameView backgroundView = new GameView(texture, 0);
         getGameScene().addGameView(backgroundView);
-        Music music = getAssetLoader().loadMusic("snake.mp3");
-        getAudioPlayer().playMusic(music);
-        music.getAudio().setVolume(0.05);
+        soundController.playBackgroundMusic();
+        soundController.loadSound();
+
         snake.addSnake();
         if (timer != null) {
             timer.expire();
@@ -68,24 +68,34 @@ public class MyGame extends GameApplication {
 
     @Override
     protected void initInput() {
-        onKey(KeyCode.RIGHT, () -> {if (snake != null) snake.setDirection(1,0);
+        onKey(KeyCode.RIGHT, () -> {
+            if (snake.getDirectionX() != -1) {
+                snake.setDirection(1, 0);
+            }
         });
-        onKey(KeyCode.LEFT, () -> {if (snake != null) snake.setDirection(-1,0);
+        onKey(KeyCode.LEFT, () -> {
+            if (snake.getDirectionX() != 1) {
+                snake.setDirection(-1, 0);
+            }
         });
-        onKey(KeyCode.UP, () -> {if (snake != null) snake.setDirection(0,-1);
+        onKey(KeyCode.UP, () -> {
+            if (snake.getDirectionY() != 1) {
+                snake.setDirection(0, -1);
+            }
 
         });
-        onKey(KeyCode.DOWN, () -> {if (snake != null) snake.setDirection(0,1);
+        onKey(KeyCode.DOWN, () -> {
+            if (snake.getDirectionY() != -1) {
+                snake.setDirection(0, 1);
+            }
         });
     }
 
     private void moveSnake() {
-
         if (snake.getSnake().isEmpty()) {
             System.out.println("snake пуст!");
             return;
         }
-
         Entity head = snake.getSnake().get(0);
 
         int headX = (int) (head.getX() / CELL_SIZE);
@@ -93,33 +103,41 @@ public class MyGame extends GameApplication {
         int newX = headX + snake.getDirectionX();
         int newY = headY + snake.getDirectionY();
 
-        for (Entity segment: snake.getSnake()) {
-            int segmentX = (int) (segment.getX() / CELL_SIZE);
-            int segmentY = (int) (segment.getY() / CELL_SIZE);
-            if (segmentX == newX && segmentY == newY) {
-                gameOver();
-                return;
-            }
-        }
-
         if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT) {
             System.out.println("СТЕНА! Игра окончена");
             gameOver();
             return;
         }
 
+        if (!snake.getSnake().isEmpty()) {
+            for (int i = 0; i < snake.getSnake().size()-1; i++) {
+                Entity segment = snake.getSnake().get(i);
+                int segmentX = (int) (segment.getX() / CELL_SIZE);
+                int segmentY = (int) (segment.getY() / CELL_SIZE);
+                if (segmentX == newX && segmentY == newY) {
+                    System.out.println("СТОЛКНОВЕНИЕ С СОБОЙ! Сегмент " + i);
+                    gameOver();
+                    return;
+                }
+            }}
+
         Entity newHead = snake.createSegment(newX, newY);
         snake.getSnake().add(0, newHead);
-
-        if (cactusController.ateCactus(newX, newY)) {
-            snake.removeTail(); }
-
+        if (cactusController.ateCactus(newX, newY)){
+            soundController.playEatCactus();
+            snake.removeTail();
+        }
         if (!appleController.ateApple(newX, newY)) {
             snake.removeTail(); }
+        else {
+            soundController.playEatApple();
+        }
     }
 
     private void gameOver() {
-        System.out.println("GAME OVER!");
+        timer = stopAllTimers(timer);
+        timerApple = stopAllTimers(timerApple);
+        timerCactus = stopAllTimers(timerCactus);
         getDialogService().showMessageBox("GAME OVER", () -> {
             getGameWorld().getEntities().clear();
             snake.getSnake().clear();
@@ -127,5 +145,12 @@ public class MyGame extends GameApplication {
             snake.setDirectionY(0);
             getGameController().startNewGame();
         });
+    }
+
+    private TimerAction stopAllTimers(TimerAction timer) {
+        if (timer != null){
+            timer.expire();
+        }
+        return null;
     }
 }
