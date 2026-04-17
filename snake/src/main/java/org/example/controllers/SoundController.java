@@ -19,7 +19,7 @@ public class SoundController {
     private Sound eatAppleSound;
     private Sound eatCactusSound;
     public static final String FILENAME_EAT_APPLE = "nam.wav";
-    public static final String FILENAME_EAT_CACTUS = "hrm.wav";
+    public static final String FILENAME_EAT_CACTUS = "puk.wav";
     public static final String FILENAME_BACKGROUND = "snake.wav";
     private Music backgroundMusic;
     private double volumeEat;
@@ -42,7 +42,6 @@ public class SoundController {
         try{
             eatAppleSound = getAssetLoader().loadSound(FILENAME_EAT_APPLE);
             eatCactusSound = getAssetLoader().loadSound(FILENAME_EAT_CACTUS);
-            System.out.println("Кактус: " + (eatCactusSound != null));
             soundsLoaded = true;
         } catch (Exception e) {
             System.out.println("Не удалось загрузить звуки" + e.getMessage());
@@ -122,6 +121,7 @@ public class SoundController {
         backgroundMusic = getAssetLoader().loadMusic(FILENAME_BACKGROUND);
         getAudioPlayer().playMusic(backgroundMusic);
         backgroundMusic.getAudio().setVolume(volume);
+        backgroundMusic.getAudio().setLooping(true);
     }
 
     public void stopBackgroundMusic() {
