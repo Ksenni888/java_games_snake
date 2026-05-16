@@ -1,6 +1,8 @@
 package org.example;
 
-public class Application extends MyGame{
+import org.example.controllers.MyGame;
+
+public class Application extends MyGame {
 
     public static void main(String[] args) {
         launch(args);

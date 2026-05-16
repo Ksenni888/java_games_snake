@@ -1,13 +1,13 @@
 package org.example.controllers;
 
 import com.almasb.fxgl.entity.Entity;
-import org.example.Snake;
+import org.example.model.Snake;
 import org.example.model.CactusComponent;
 
 import static com.almasb.fxgl.dsl.FXGL.entityBuilder;
-import static org.example.Constants.CELL_SIZE;
-import static org.example.Constants.GRID_HEIGHT;
-import static org.example.Constants.GRID_WIDTH;
+import static org.example.model.Constants.CELL_SIZE;
+import static org.example.model.Constants.GRID_HEIGHT;
+import static org.example.model.Constants.GRID_WIDTH;
 
 public class CactusController {
     private Snake snake;

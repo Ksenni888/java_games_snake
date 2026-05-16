@@ -19,7 +19,7 @@ public class SoundController {
     private Sound eatAppleSound;
     private Sound eatCactusSound;
     public static final String FILENAME_EAT_APPLE = "nam.wav";
-    public static final String FILENAME_EAT_CACTUS = "puk.wav";
+    public static final String FILENAME_EAT_CACTUS = "hrm.wav";
     public static final String FILENAME_BACKGROUND = "snake.wav";
     private Music backgroundMusic;
     private double volumeEat;
@@ -49,7 +49,7 @@ public class SoundController {
     }
 
     private void loadSettings() {
-        volume = prefs.getDouble("volume", 0.5);
+        volume = prefs.getDouble("volume", 0.19);
         volumeEat = prefs.getDouble("volumeEat", 0.05);
         soundEnabled = prefs.getBoolean("soundEnabled", true);
     }
@@ -62,8 +62,6 @@ public class SoundController {
 
     public void setVolumeEat(double volumeEat) {
         this.volumeEat = Math.max(0.0, Math.min(1.0, volumeEat));
-        System.out.println("volumeEat изменен на: " + this.volumeEat);
-
         saveSettings();
     }
 
