@@ -97,7 +97,7 @@ public class MyGame extends GameApplication {
 
     private void moveSnake() {
         List<Entity> segmentsSnake = snake.getSnake();
-        if (!checkEmptySnake(segmentsSnake)) return;
+        if (checkEmptySnake(segmentsSnake)) return;
 
         Entity head = segmentsSnake.get(0);
         int headX = (int) (head.getX() / CELL_SIZE);
@@ -105,9 +105,10 @@ public class MyGame extends GameApplication {
         int newX = headX + snake.getDirectionX();
         int newY = headY + snake.getDirectionY();
 
-        if (touchWall(newX, newY) || checkSelfCollision(segmentsSnake, newX, newY)) {gameOver();}
+        if (touchWall(newX, newY)) {gameOver();}
 
         Entity newHead = snake.createSegment(newX, newY);
+        if (checkSelfCollision(segmentsSnake, newX, newY)){gameOver();}
         segmentsSnake.add(0, newHead);
         CactusCollision(newX, newY);
         AppleCollision(newX, newY);
