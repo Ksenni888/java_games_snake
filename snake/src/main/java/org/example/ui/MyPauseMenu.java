@@ -14,7 +14,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.example.controllers.SoundController;
 
-
 public class MyPauseMenu extends FXGLMenu {
     private SoundController soundController = SoundController.getInstance();
 

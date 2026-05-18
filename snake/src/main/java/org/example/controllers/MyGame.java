@@ -8,11 +8,10 @@ import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.time.TimerAction;
 import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
-import org.example.controllers.AppleController;
-import org.example.controllers.CactusController;
-import org.example.controllers.SoundController;
 import org.example.model.Snake;
 import org.example.ui.MySceneFactory;
+
+import java.util.List;
 
 import static com.almasb.fxgl.dsl.FXGL.getAssetLoader;
 import static com.almasb.fxgl.dsl.FXGL.getDialogService;
@@ -56,7 +55,6 @@ public class MyGame extends GameApplication {
         getGameScene().addGameView(backgroundView);
         soundController.playBackgroundMusic();
         soundController.loadSound();
-
         snake.addSnake();
         if (timer != null) {
             timer.expire();
@@ -69,65 +67,60 @@ public class MyGame extends GameApplication {
 
     @Override
     protected void initInput() {
-        onKey(KeyCode.RIGHT, () -> {
-            if (snake.getDirectionX() != -1) {
-                snake.setDirection(1, 0);
-            }
-        });
-        onKey(KeyCode.LEFT, () -> {
-            if (snake.getDirectionX() != 1) {
-                snake.setDirection(-1, 0);
-            }
-        });
-        onKey(KeyCode.UP, () -> {
-            if (snake.getDirectionY() != 1) {
-                snake.setDirection(0, -1);
-            }
+        onKey(KeyCode.RIGHT, () -> snake.setDirection(1,0));
+        onKey(KeyCode.LEFT, () -> snake.setDirection(-1, 0));
+        onKey(KeyCode.UP, () -> snake.setDirection(0, -1));
+        onKey(KeyCode.DOWN, () -> snake.setDirection(0, 1));
+    }
 
-        });
-        onKey(KeyCode.DOWN, () -> {
-            if (snake.getDirectionY() != -1) {
-                snake.setDirection(0, 1);
+   boolean checkEmptySnake(List<Entity> segmentsSnake){
+        return segmentsSnake.isEmpty();
+    }
+
+   boolean touchWall(int x, int y){
+        return x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT;
+    }
+
+   boolean checkSelfCollision(List<Entity> segmentsSnake, int newX, int newY){
+        int lengthSnake = segmentsSnake.size();
+        for (int i = 0; i < lengthSnake-1; i++) {
+            Entity segment = segmentsSnake.get(i);
+            int segmentX = (int) (segment.getX() / CELL_SIZE);
+            int segmentY = (int) (segment.getY() / CELL_SIZE);
+            if (segmentX == newX && segmentY == newY) {
+                System.out.println("СТОЛКНОВЕНИЕ С СОБОЙ! Сегмент " + i);
+                return true;
             }
-        });
+        }
+        return false;
     }
 
     private void moveSnake() {
-        if (snake.getSnake().isEmpty()) {
-            System.out.println("snake пуст!");
-            return;
-        }
-        Entity head = snake.getSnake().get(0);
+        List<Entity> segmentsSnake = snake.getSnake();
+        if (!checkEmptySnake(segmentsSnake)) return;
 
+        Entity head = segmentsSnake.get(0);
         int headX = (int) (head.getX() / CELL_SIZE);
         int headY = (int) (head.getY() / CELL_SIZE);
         int newX = headX + snake.getDirectionX();
         int newY = headY + snake.getDirectionY();
 
-        if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT) {
-            System.out.println("СТЕНА! Игра окончена");
-            gameOver();
-            return;
-        }
-
-        if (!snake.getSnake().isEmpty()) {
-            for (int i = 0; i < snake.getSnake().size()-1; i++) {
-                Entity segment = snake.getSnake().get(i);
-                int segmentX = (int) (segment.getX() / CELL_SIZE);
-                int segmentY = (int) (segment.getY() / CELL_SIZE);
-                if (segmentX == newX && segmentY == newY) {
-                    System.out.println("СТОЛКНОВЕНИЕ С СОБОЙ! Сегмент " + i);
-                    gameOver();
-                    return;
-                }
-            }}
+        if (touchWall(newX, newY) || checkSelfCollision(segmentsSnake, newX, newY)) {gameOver();}
 
         Entity newHead = snake.createSegment(newX, newY);
-        snake.getSnake().add(0, newHead);
+        segmentsSnake.add(0, newHead);
+        CactusCollision(newX, newY);
+        AppleCollision(newX, newY);
+    }
+
+    private void CactusCollision(int newX, int newY){
         if (cactusController.ateCactus(newX, newY)){
             soundController.playEatCactus();
             snake.removeTail();
         }
+    }
+
+    private void AppleCollision(int newX, int newY){
         if (!appleController.ateApple(newX, newY)) {
             snake.removeTail(); }
         else {
